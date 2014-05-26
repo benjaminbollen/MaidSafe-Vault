@@ -48,7 +48,8 @@ class PublicKeyGetter {
   PublicKeyGetter() : mutex_() {}
 
   void operator()(const NodeId& node_id, const routing::GivePublicKeyFunctor& give_key,
-                  const std::vector<passport::PublicPmid>& public_pmids);
+                  const std::vector<passport::PublicPmid>& public_pmids,
+                  nfs_client::DataGetter& data_getter);
  private:
   std::mutex mutex_;
 };

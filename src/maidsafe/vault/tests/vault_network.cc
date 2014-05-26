@@ -43,7 +43,8 @@ PublicKeyGetter Client::public_key_getter_;
 
 void PublicKeyGetter::operator()(const NodeId& node_id,
                                  const routing::GivePublicKeyFunctor& give_key,
-                                 const std::vector<passport::PublicPmid>& public_pmids) {
+                                 const std::vector<passport::PublicPmid>& public_pmids,
+                                 nfs_client::DataGetter& data_getter) {
   passport::PublicPmid::Name name(Identity(node_id.string()));
   std::lock_guard<std::mutex> lock(mutex_);
   if (!public_pmids.empty()) {
@@ -63,6 +64,15 @@ void PublicKeyGetter::operator()(const NodeId& node_id,
       }
     } catch (...) {
       LOG(kError) << "Failed to get PublicPmid " << HexSubstr(name.value) << " locally";
+    }
+  } else {
+    auto future(data_getter.Get(name));
+    try {
+      give_key(future.get().public_key());
+    }
+    catch (const std::exception& error) {
+      LOG(kError) << "Failure to retrieve " << DebugId(node_id) << " : "
+                  << boost::diagnostic_information(error);
     }
   }
 }
@@ -392,7 +402,7 @@ std::future<bool> Client::RoutingJoin(const std::vector<UdpEndpoint>& peer_endpo
 //      [&](const routing::SingleToGroupRelayMessage &msg) { nfs_->HandleMessage(msg); };
   functors_.request_public_key =
       [&, this](const NodeId& node_id, const routing::GivePublicKeyFunctor& give_key) {
-        public_key_getter_(node_id, give_key, public_pmids_);
+        public_key_getter_(node_id, give_key, public_pmids_, data_getter_);
       };
   routing_.Join(functors_, peer_endpoints);
   return std::move(join_promise->get_future());
