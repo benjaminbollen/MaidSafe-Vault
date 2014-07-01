@@ -37,16 +37,14 @@ class VaultTest : public testing::Test {
  public:
   VaultTest() : env_(VaultEnvironment::g_environment()) {}
 
-  std::vector<VaultNetwork::ClientPtr>& GetClients() {
-    return env_->clients_;
-  }
+  std::vector<VaultNetwork::ClientPtr>& GetClients() { return env_->clients_; }
 
  protected:
   std::shared_ptr<VaultNetwork> env_;
 };
 
 TEST_F(VaultTest, FUNC_PutGet) {
-  ImmutableData data(NonEmptyString(RandomString(1024)));
+  ImmutableData data(NonEmptyString(RandomString(kTestChunkSize)));
   LOG(kVerbose) << "Before put";
   try {
     EXPECT_NO_THROW(GetClients().front()->Put(data));
@@ -71,20 +69,19 @@ TEST_F(VaultTest, FUNC_MultiplePuts) {
   const size_t kIterations(100);
   std::vector<ImmutableData> chunks;
   for (auto index(kIterations); index > 0; --index)
-    chunks.emplace_back(NonEmptyString(RandomString(1024)));
+    chunks.emplace_back(NonEmptyString(RandomString(kTestChunkSize)));
 
   int index(0);
   for (const auto& chunk : chunks) {
-    EXPECT_NO_THROW(GetClients().front()->Put(chunk))
-                        << "Store failure " << DebugId(NodeId(chunk.name()->string()));
+    EXPECT_NO_THROW(GetClients().front()->Put(chunk)) << "Store failure "
+                                                      << DebugId(NodeId(chunk.name()->string()));
     LOG(kVerbose) << DebugId(NodeId(chunk.name()->string())) << " stored: " << index++;
   }
 
   std::vector<boost::future<ImmutableData>> get_futures;
   for (const auto& chunk : chunks) {
-    get_futures.emplace_back(
-        GetClients().front()->Get<ImmutableData::Name>(chunk.name(),
-                                                     std::chrono::seconds(kIterations * 2)));
+    get_futures.emplace_back(GetClients().front()->Get<ImmutableData::Name>(
+        chunk.name(), std::chrono::seconds(kIterations * 2)));
   }
 
   for (size_t index(0); index < kIterations; ++index) {
@@ -95,7 +92,7 @@ TEST_F(VaultTest, FUNC_MultiplePuts) {
     }
     catch (const std::exception& ex) {
       EXPECT_TRUE(false) << "Failed to retrieve chunk: " << DebugId(chunks[index].name())
-                         << " because: " << boost::diagnostic_information(ex) << " "  << index;
+                         << " because: " << boost::diagnostic_information(ex) << " " << index;
     }
   }
 
@@ -104,9 +101,8 @@ TEST_F(VaultTest, FUNC_MultiplePuts) {
   Sleep(std::chrono::seconds(10));
   std::vector<boost::future<ImmutableData>> no_cache_get_futures;
   for (const auto& chunk : chunks) {
-    no_cache_get_futures.emplace_back(
-        GetClients().front()->Get<ImmutableData::Name>(chunk.name(),
-                                                           std::chrono::seconds(kIterations)));
+    no_cache_get_futures.emplace_back(GetClients().front()->Get<ImmutableData::Name>(
+        chunk.name(), std::chrono::seconds(kIterations)));
   }
 
   for (size_t index(0); index < kIterations; ++index) {
@@ -117,20 +113,20 @@ TEST_F(VaultTest, FUNC_MultiplePuts) {
     }
     catch (const std::exception& ex) {
       EXPECT_TRUE(false) << "Failed to retrieve chunk: " << DebugId(chunks[index].name())
-                         << " because: " << boost::diagnostic_information(ex) << " "  << index;
+                         << " because: " << boost::diagnostic_information(ex) << " " << index;
     }
   }
   LOG(kVerbose) << "Multiple puts is finished successfully";
 }
 
 TEST_F(VaultTest, FUNC_FailingGet) {
-  ImmutableData data(NonEmptyString(RandomString(1024)));
+  ImmutableData data(NonEmptyString(RandomString(kTestChunkSize)));
   EXPECT_THROW(env_->Get<ImmutableData>(data.name()), std::exception) << "must have failed";
 }
 
 // The test below is disbaled as its proper operation assumes a delete funcion is in place
 TEST_F(VaultTest, DISABLED_FUNC_PutMultipleCopies) {
-  ImmutableData data(NonEmptyString(RandomString(1024)));
+  ImmutableData data(NonEmptyString(RandomString(kTestChunkSize)));
   boost::future<ImmutableData> future;
   GetClients().front()->Put(data);
   Sleep(std::chrono::seconds(2));
@@ -187,7 +183,7 @@ TEST_F(VaultTest, DISABLED_FUNC_PutMultipleCopies) {
   routing::Parameters::caching = false;
 
   EXPECT_THROW(env_->Get<ImmutableData>(data.name()), std::exception)
-                   << "Should have failed to retreive";
+      << "Should have failed to retreive";
 
   LOG(kVerbose) << "PutMultipleCopies Succeeds";
   routing::Parameters::caching = true;
@@ -197,7 +193,7 @@ TEST_F(VaultTest, FUNC_MultipleClientsPut) {
   const size_t kIterations(10);
   std::vector<ImmutableData> chunks;
   for (auto index(kIterations); index > 0; --index)
-    chunks.emplace_back(NonEmptyString(RandomString(1024)));
+    chunks.emplace_back(NonEmptyString(RandomString(kTestChunkSize)));
 
   for (const auto& chunk : chunks) {
     LOG(kVerbose) << "Storing: " << DebugId(chunk.name());

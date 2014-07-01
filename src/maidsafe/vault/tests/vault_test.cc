@@ -53,13 +53,13 @@ class VaultTest : public testing::Test {
   std::unique_ptr<Vault> vault_;
 };
 
-TEST_F(VaultTest, BEH_Constructor) {
+TEST_F(VaultTest, DISABLED_FUNC_Constructor) {
   std::vector<passport::PublicPmid> public_pmids_from_file;
   public_pmids_from_file.push_back(passport::PublicPmid(passport::CreatePmidAndSigner().first));
   routing::BootstrapContacts bootstrap_contacts;
-  bootstrap_contacts.push_back(boost::asio::ip::udp::endpoint(GetLocalIp(),
-                                                          (RandomUint32() % 64511) + 2025));
-  vault_manager::VaultConfig vault_config(pmid_, vault_root_directory_, DiskUsage(1000000000),
+  bootstrap_contacts.push_back(
+      boost::asio::ip::udp::endpoint(GetLocalIp(), (RandomUint32() % 64511) + 2025));
+  vault_manager::VaultConfig vault_config(pmid_, vault_root_directory_, DiskUsage(100000),
                                           bootstrap_contacts);
   vault_config.test_config.public_pmid_list = public_pmids_from_file;
   EXPECT_THROW(vault_.reset(new Vault(vault_config, on_new_bootstrap_endpoint_)),
