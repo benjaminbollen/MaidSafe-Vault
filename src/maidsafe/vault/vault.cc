@@ -128,10 +128,9 @@ routing::Functors Vault::InitialiseRoutingCallbacks() {
 
   functors.network_status = [this](const int&
                                    network_health) { OnNetworkStatusChange(network_health); };  // NOLINT
-  functors.close_node_replaced = [this](const std::vector<routing::NodeInfo>&
-                                        new_close_nodes) { OnCloseNodeReplaced(new_close_nodes); };  // NOLINT
-  functors.matrix_changed = [this](std::shared_ptr<routing::MatrixChange> matrix_change) {
-    OnMatrixChanged(matrix_change);
+  functors.close_nodes_change = [this](
+      std::shared_ptr<routing::CloseNodesChange> close_nodes_change) {
+    OnCloseNodesChange(close_nodes_change);
   };
   functors.request_public_key = [this](
     const NodeId& node_id,
@@ -159,16 +158,14 @@ void Vault::DoOnNetworkStatusChange(int network_health) {
   // TODO(Team) : actions when network is down/up per persona
 }
 
-void Vault::OnCloseNodeReplaced(const std::vector<routing::NodeInfo>& /*new_close_nodes*/) {}
-
-void Vault::OnMatrixChanged(std::shared_ptr<routing::MatrixChange> matrix_change) {
-//   LOG(kVerbose) << "OnMatrixChanged ";
-//   matrix_change->Print();
-//   data_manager_service_.HandleChurnEvent(matrix_change);
-  asio_service_.service().post([=] { maid_manager_service_.HandleChurnEvent(matrix_change); });
-  asio_service_.service().post([=] { version_handler_service_.HandleChurnEvent(matrix_change); });
-  asio_service_.service().post([=] { data_manager_service_.HandleChurnEvent(matrix_change); });
-  asio_service_.service().post([=] { pmid_manager_service_.HandleChurnEvent(matrix_change); });
+void Vault::OnCloseNodesChange(std::shared_ptr<routing::CloseNodesChange> close_nodes_change) {
+//   LOG(kVerbose) << "OnCloseNodesChange ";
+//   close_nodes_change->Print();
+//   data_manager_service_.HandleChurnEvent(close_nodes_change);
+  asio_service_.service().post([=] { maid_manager_service_.HandleChurnEvent(close_nodes_change); });
+  asio_service_.service().post([=] { version_handler_service_.HandleChurnEvent(close_nodes_change); });
+  asio_service_.service().post([=] { data_manager_service_.HandleChurnEvent(close_nodes_change); });
+  asio_service_.service().post([=] { pmid_manager_service_.HandleChurnEvent(close_nodes_change); });
 }
 
 void Vault::OnNewBootstrapContact(const routing::BootstrapContact& bootstrap_contact) {

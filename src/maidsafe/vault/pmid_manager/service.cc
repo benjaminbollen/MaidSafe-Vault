@@ -475,12 +475,12 @@ void PmidManagerService::HandleCreatePmidAccountRequest(const PmidName& pmid_nod
 // }
 
 void PmidManagerService::HandleChurnEvent(
-    std::shared_ptr<routing::MatrixChange> matrix_change) {
+    std::shared_ptr<routing::CloseNodesChange> close_nodes_change) {
   std::lock_guard<std::mutex> lock(mutex_);
   if (stopped_)
     return;
   LOG(kVerbose) << "PmidManager HandleChurnEvent";
-  auto lost_nodes(matrix_change->lost_nodes());
+  auto lost_nodes(close_nodes_change->lost_nodes());
   for (auto& node : lost_nodes) {
     try {
       auto pmid_node(PmidName(Identity(node.string())));
@@ -496,7 +496,7 @@ void PmidManagerService::HandleChurnEvent(
         throw;
     }
   }
-  auto new_nodes(matrix_change->new_nodes());
+  auto new_nodes(close_nodes_change->new_nodes());
   for (auto& node : new_nodes) {
     try {
       auto pmid_node(PmidName(Identity(node.string())));
@@ -512,7 +512,7 @@ void PmidManagerService::HandleChurnEvent(
         throw;
     }
   }
-  GroupDb<PmidManager>::TransferInfo transfer_info(group_db_.GetTransferInfo(matrix_change));
+  GroupDb<PmidManager>::TransferInfo transfer_info(group_db_.GetTransferInfo(close_nodes_change));
   for (auto& transfer : transfer_info)
     TransferAccount(transfer.first, transfer.second);
 }
@@ -542,7 +542,7 @@ void PmidManagerService::TransferAccount(const NodeId& dest,
     const std::vector<GroupDb<PmidManager>::Contents>& accounts) {
   for (auto& account : accounts) {
     // If account just received, shall not pass it out as may under a startup procedure
-    // i.e. existing PM will be seen as new_node in matrix_change
+    // i.e. existing PM will be seen as new_node in close_nodes_change
     if (account_transfer_.CheckHandled(routing::GroupId(NodeId(account.group_name->string())))) {
       LOG(kInfo) << "PmidManager account " << HexSubstr(account.group_name->string())
                  << " just received";
