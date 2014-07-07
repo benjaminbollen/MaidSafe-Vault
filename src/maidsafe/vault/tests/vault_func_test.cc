@@ -54,7 +54,8 @@ TEST_F(VaultTest, FUNC_PutGet) {
     EXPECT_TRUE(false) << "Failed to put: " << DebugId(NodeId(data.name()->string()));
   }
 
-  auto future(GetClients().front()->Get<ImmutableData::Name>(data.name()));
+  auto future(GetClients().front()->Get<ImmutableData::Name>(
+      data.name(), std::chrono::seconds(20)));
   try {
     auto retrieved(future.get());
     EXPECT_EQ(retrieved.data(), data.data());

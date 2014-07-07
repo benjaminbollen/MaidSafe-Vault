@@ -24,6 +24,8 @@
    limitations relating to
     use of the MaidSafe Software. */
 
+option optimize_for = LITE_RUNTIME;
+
 package maidsafe.vault.protobuf;
 
 message Sync {

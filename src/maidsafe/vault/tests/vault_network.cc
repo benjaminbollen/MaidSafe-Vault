@@ -132,19 +132,20 @@ bool VaultNetwork::AddVault() {
     LOG(kVerbose) << "Failed to store anpmid " << error.what();
     return false;
   }
-
+  LOG(kVerbose) << "Before create";
   bool result(Create(pmid_and_signer.first));
+  LOG(kVerbose) << "After create";
   if (result) {
-    auto register_pmid_future(clients_.front()->RegisterPmid(pmid_and_signer.first));
-    try {
-      register_pmid_future.get();
-      LOG(kVerbose) << "Pmid regsitration succeeded";
+//    auto register_pmid_future(clients_.front()->RegisterPmid(pmid_and_signer.first));
+//    try {
+//      register_pmid_future.get();
+//      LOG(kVerbose) << "Pmid regsitration succeeded";
+//    }
+//    catch (const maidsafe_error& error) {
+//      LOG(kError) << "Pmid Registration Failed " << boost::diagnostic_information(error);
+//      return false;
     }
-    catch (const maidsafe_error& error) {
-      LOG(kError) << "Pmid Registration Failed " << boost::diagnostic_information(error);
-      return false;
-    }
-  }
+//  }
   Sleep(std::chrono::seconds(2));
   return true;
 }
@@ -152,11 +153,14 @@ bool VaultNetwork::AddVault() {
 void VaultNetwork::AddClient() {
   passport::MaidAndSigner maid_and_signer{passport::CreateMaidAndSigner()};
   AddClient(maid_and_signer, bootstrap_contacts_);
+  LOG(kVerbose) << "VaultNetwork::AddClient " << maid_and_signer.first.name()->string();
+  Sleep(std::chrono::seconds(5));
 }
 
 void VaultNetwork::AddClient(const passport::Maid& maid,
                              const routing::BootstrapContacts& bootstrap_contacts) {
   clients_.emplace_back(nfs_client::MaidNodeNfs::MakeShared(maid, bootstrap_contacts));
+  Sleep(std::chrono::seconds(5));
 }
 
 void VaultNetwork::AddClient(const passport::MaidAndSigner& maid_and_signer,
