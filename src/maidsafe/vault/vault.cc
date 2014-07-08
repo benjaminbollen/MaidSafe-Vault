@@ -160,8 +160,12 @@ void Vault::DoOnNetworkStatusChange(int network_health) {
 }
 
 void Vault::OnCloseNodesChange(std::shared_ptr<routing::CloseNodesChange> close_nodes_change) {
-//   LOG(kVerbose) << "OnCloseNodesChange ";
-//   close_nodes_change->Print();
+   LOG(kVerbose) << "OnCloseNodesChange ";
+   close_nodes_change->Print();
+   if (!close_nodes_change->lost_node().IsZero())
+     LOG(kVerbose) << routing_->kNodeId() << " loose node: " << close_nodes_change->lost_node();
+   if (!close_nodes_change->new_node().IsZero())
+     LOG(kVerbose) << routing_->kNodeId() << " new node: " << close_nodes_change->new_node();
 //   data_manager_service_.HandleChurnEvent(close_nodes_change);
   asio_service_.service().post([=] { maid_manager_service_.HandleChurnEvent(close_nodes_change); });
   asio_service_.service().post([=] { version_handler_service_.HandleChurnEvent(close_nodes_change); });

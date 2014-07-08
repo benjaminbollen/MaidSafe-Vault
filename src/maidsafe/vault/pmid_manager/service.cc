@@ -480,14 +480,14 @@ void PmidManagerService::HandleChurnEvent(
   if (stopped_)
     return;
   LOG(kVerbose) << "PmidManager HandleChurnEvent";
-  auto lost_nodes(close_nodes_change->lost_nodes());
-  for (auto& node : lost_nodes) {
+  auto lost_node(close_nodes_change->lost_node());
+  if (!lost_node.IsZero()) {
     try {
-      auto pmid_node(PmidName(Identity(node.string())));
+      auto pmid_node(PmidName(Identity(lost_node.string())));
       auto contents(group_db_.GetContents(pmid_node));
       for (const auto& kv_pair : contents.kv_pairs) {
-        VLOG(nfs::Persona::kPmidManager, VisualiserAction::kDropPmidNode, Identity{ node.string() },
-             kv_pair.first.name);
+        VLOG(nfs::Persona::kPmidManager, VisualiserAction::kDropPmidNode,
+             Identity{ lost_node.string() }, kv_pair.first.name);
         auto data_name(nfs_vault::DataName(kv_pair.first.type, kv_pair.first.name));
         dispatcher_.SendSetPmidOffline(data_name, pmid_node);
       }
@@ -496,14 +496,14 @@ void PmidManagerService::HandleChurnEvent(
         throw;
     }
   }
-  auto new_nodes(close_nodes_change->new_nodes());
-  for (auto& node : new_nodes) {
+  auto new_node(close_nodes_change->new_node());
+  if (!new_node.IsZero()) {
     try {
-      auto pmid_node(PmidName(Identity(node.string())));
-      auto contents(group_db_.GetContents(PmidName(Identity(node.string()))));
+      auto pmid_node(PmidName(Identity(lost_node.string())));
+      auto contents(group_db_.GetContents(PmidName(Identity(lost_node.string()))));
       for (const auto& kv_pair : contents.kv_pairs) {
-        VLOG(nfs::Persona::kPmidManager, VisualiserAction::kJoinPmidNode, Identity{ node.string() },
-             kv_pair.first.name);
+        VLOG(nfs::Persona::kPmidManager, VisualiserAction::kJoinPmidNode,
+             Identity{ lost_node.string() }, kv_pair.first.name);
         auto data_name(nfs_vault::DataName(kv_pair.first.type, kv_pair.first.name));
         dispatcher_.SendSetPmidOnline(data_name, pmid_node);
       }
