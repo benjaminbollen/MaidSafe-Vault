@@ -220,10 +220,14 @@ endif()
 # install(TARGETS maidsafe_vault maidsafe_vault_cache_handler maidsafe_vault_data_manager maidsafe_vault_maid_manager
 #                 maidsafe_vault_mpid_manager maidsafe_vault_pmid_manager maidsafe_vault_pmid_node maidsafe_vault_version_handler
 #                 COMPONENT Development CONFIGURATIONS Debug Release ARCHIVE DESTINATION lib)
-install(TARGETS vault COMPONENT Apps CONFIGURATIONS Debug RUNTIME DESTINATION bin/debug)
-install(TARGETS vault COMPONENT Apps CONFIGURATIONS Release RUNTIME DESTINATION bin)
+if(UNIX)
+  install(TARGETS vault COMPONENT Development DESTINATION /opt/maidsafe/vault)
+ELSE()
+  install(TARGETS vault COMPONENT Apps CONFIGURATIONS Debug RUNTIME DESTINATION bin/debug)
+ install(TARGETS vault COMPONENT Apps CONFIGURATIONS Release RUNTIME DESTINATION bin)
+ENDIF()
 
-if(MaidsafeTesting)
+if(MaidsafeTesting AND NOT $ENV{DESTDIR})
   install(TARGETS test_vault network_test_vault COMPONENT Tests CONFIGURATIONS Debug RUNTIME DESTINATION bin/debug)
   install(TARGETS test_vault network_test_vault COMPONENT Tests CONFIGURATIONS Release RUNTIME DESTINATION bin)
 endif()
