@@ -68,6 +68,10 @@ class Vault {
     version_handler_service_.Stop();
     data_manager_service_.Stop();
     pmid_manager_service_.Stop();
+    // 2014-11-19 Ben: do these services not need to be stopped?
+    // pmid_node_service_.Stop();
+    // data_getter_.Stop();
+    // cache_service_.Stop();
   }
 
  private:
