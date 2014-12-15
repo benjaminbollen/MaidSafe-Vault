@@ -100,11 +100,12 @@ void MaidManagerService::HandleCreateMaidAccount(const passport::PublicMaid& pub
   }
 
   dispatcher_.SendPutRequest(key, public_maid, maid_message_id);
-  std::cout << "MMS::HandleCreateMaidAccount sent MAID " << DebugId(public_maid) << " from msg_id"
-            << message_id << " as MAID_msg_id " << maid_message_id;
+  std::cout << "MMS::HandleCreateMaidAccount sent MAID " << HexSubstr(public_maid.name()->string())
+            << " from msg_id " << message_id << " as MAID_msg_id " << maid_message_id << std::endl;
   dispatcher_.SendPutRequest(key, public_anmaid, anmaid_message_id);
-  std::cout << "MMS::HandleCreateMaidAccount sent ANMAID " << DebugId(public_anmaid)
-            << " from msg_id" << message_id << " as ANMAID_msg_id " << maid_message_id;
+  std::cout << "MMS::HandleCreateMaidAccount sent ANMAID "
+            << HexSubstr(public_anmaid.name()->string()) << " from msg_id " << message_id
+            << " as ANMAID_msg_id " << anmaid_message_id << std::endl;
   
 }
 
@@ -133,14 +134,16 @@ void MaidManagerService::HandlePutResponse<passport::PublicMaid>(const MaidName&
   static_cast<void>(data_name);
   pending_account_itr->second.maid_stored = true;
   reverse_pending_account_message_id_.erase(reverse_message_id_itr);
-  std::cout << "MMS::HandlePutResponse Confirmed Put MAID " << DebugId(data_name);
+  std::cout << "MMS::HandlePutResponse Confirmed Put MAID " << HexSubstr(data_name.value.string())
+            << std::endl;
 
   if (pending_account_itr->second.anmaid_stored) {
     LOG(kVerbose) << "AddLocalAction create account for " << HexSubstr(maid_name->string());
     DoSync(MaidManager::UnresolvedCreateAccount(MaidManager::MetadataKey(maid_name),
         ActionCreateAccount(message_id), routing_.kNodeId()));
     pending_account_map_.erase(pending_account_itr);
-    std::cout << "MMS::HandlePutResponse Confirmed CreateAccount for " << DebugId(data_name);
+    std::cout << "MMS::HandlePutResponse Confirmed CreateAccount for "
+              << HexSubstr(data_name.value.string()) << std::endl;
   }
 }
 
@@ -165,14 +168,16 @@ void MaidManagerService::HandlePutResponse<passport::PublicAnmaid>(const MaidNam
   static_cast<void>(data_name);
   pending_account_itr->second.anmaid_stored = true;
   reverse_pending_account_message_id_.erase(reverse_message_id_itr);
-  std::cout << "MMS::HandlePutResponse Confirmed Put ANMAID " << DebugId(data_name);
+  std::cout << "MMS::HandlePutResponse Confirmed Put ANMAID "
+            << HexSubstr(data_name.value.string()) << std::endl;
   
   if (pending_account_itr->second.maid_stored) {
     LOG(kVerbose) << "AddLocalAction create account for " << HexSubstr(maid_name->string());
     DoSync(MaidManager::UnresolvedCreateAccount(MaidManager::MetadataKey(maid_name),
         ActionCreateAccount(message_id), routing_.kNodeId()));
     pending_account_map_.erase(pending_account_itr);
-    std::cout << "MMS::HandlePutResponse Confirmed CreateAccount for " << DebugId(maid_name);
+    std::cout << "MMS::HandlePutResponse Confirmed CreateAccount for "
+              << HexSubstr(maid_name->string()) << std::endl;
   }
 }
 
@@ -197,7 +202,8 @@ void MaidManagerService::HandlePutFailure<passport::PublicMaid>(
   // TODO(Team): Consider deleting anmaid key if stored
   pending_account_map_.erase(pending_account_itr);
   reverse_pending_account_message_id_.erase(reverse_message_id_itr);
-  std::cout << "MMS::HandlePutResponse Failure Put MAID " << DebugId(data_name);
+  std::cout << "MMS::HandlePutResponse Failure Put MAID " << HexSubstr(data_name.value.string())
+            << std::endl;
 
   dispatcher_.SendCreateAccountResponse(maid_name, error, original_message_id);
 }
@@ -222,7 +228,8 @@ void MaidManagerService::HandlePutFailure<passport::PublicAnmaid>(
   // TODO(Team): Consider deleting maid key if stored
   pending_account_map_.erase(pending_account_itr);
   reverse_pending_account_message_id_.erase(reverse_message_id_itr);
-  std::cout << "MMS::HandlePutResponse Failure Put ANMAID " << DebugId(maid_name);
+  std::cout << "MMS::HandlePutResponse Failure Put ANMAID for maid "
+            << HexSubstr(maid_name->string()) << std::endl;
   
   dispatcher_.SendCreateAccountResponse(maid_name, error, original_message_id);
 }
