@@ -57,6 +57,13 @@ class DataManagerServiceTest : public testing::Test {
 
   DataManager::Value Get(const DataManager::Key& key) { return data_manager_service_.db_.Get(key); }
 
+  template <typename Data>
+  void HandlePutResponse(const typename Data::Name& data_name,
+                         const PmidName& pmid_node,
+                         nfs::MessageId message_id) {
+    this->data_manager_service_.HandlePutResponse<ImmutableData>(data_name, pmid_node, message_id);
+  }
+
   template <typename UnresolvedActionType>
   std::vector<std::unique_ptr<UnresolvedActionType>> GetUnresolvedActions();
 
@@ -316,6 +323,13 @@ TEST_F(DataManagerServiceTest, BEH_RemovePmid) {
       key, action_remove_pmid, group_source));
   SendSync<DataManager::UnresolvedRemovePmid>(group_unresolved_action, group_source);
   EXPECT_TRUE(Get(key).AllPmids().size() == 1);
+}
+
+TEST_F(DataManagerServiceTest, BEH_HandlePutResponse) {
+  ImmutableData data(NonEmptyString(RandomString(kTestChunkSize)));
+  PmidName pmid_name(Identity(RandomString(NodeId::kSize)));
+  EXPECT_NO_THROW(this->HandlePutResponse<ImmutableData>(data.name(), pmid_name,
+                                                         nfs::MessageId(RandomUint32())));
 }
 
 }  //  namespace test

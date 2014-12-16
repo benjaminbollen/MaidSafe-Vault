@@ -112,6 +112,7 @@ class DataManagerService {
   void HandlePutWhereEntryExists(const Data& data, const MaidName& maid_name,
                                  nfs::MessageId message_id, uint64_t cost, EntryNeedNotBeUnique);
 
+  // should not throw exception if the node is not updated with the account.
   template <typename Data>
   void HandlePutResponse(const typename Data::Name& data_name, const PmidName& pmid_node,
                          nfs::MessageId message_id);
@@ -460,8 +461,6 @@ void DataManagerService::HandlePutResponse(const typename Data::Name& data_name,
                 << HexSubstr(data_name.value.string()) << " storing on pmid_node "
                 << HexSubstr(pmid_node.value.string());
   typename DataManager::Key key(data_name.value, Data::Tag::kValue);
-  DoSync(DataManager::UnresolvedAddPmid(key, ActionDataManagerAddPmid(pmid_node),
-         routing_.kNodeId()));
   // if storages nodes reached cap, the existing furthest offline node need to be removed
   DataManager::Value value;
   try {
@@ -475,6 +474,10 @@ void DataManagerService::HandlePutResponse(const typename Data::Name& data_name,
     }
     throw;
   }
+
+  DoSync(DataManager::UnresolvedAddPmid(key, ActionDataManagerAddPmid(pmid_node),
+         routing_.kNodeId()));
+
   PmidName pmid_node_to_remove;
   auto need_to_prune(false);
   {
