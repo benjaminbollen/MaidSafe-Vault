@@ -16,8 +16,37 @@
     See the Licences for the specific language governing permissions and limitations relating to
     use of the MaidSafe Software.                                                                 */
 
-#include "maidsafe/common/test.h"
+#include "maidsafe/routing/routing_node.h"
+#include "maidsafe/vault/data_manager.h"
+#include "maidsafe/vault/maid_manager.h"
+#include "maidsafe/vault/pmid_manager.h"
+#include "maidsafe/vault/pmid_node.h"
 
-int main(int argc, char** argv) {
-  return maidsafe::test::ExecuteMain(argc, argv);
-}
+
+#ifndef MAIDSAFE_VAULT_VAULT_FACADE_H_
+#define MAIDSAFE_VAULT_VAULT_FACADE_H_
+
+namespace maidsafe {
+
+namespace vault {
+
+class VaultFacade : public MaidManager<VaultFacade>,
+                    public DataManager<VaultFacade>,
+                    public PmidManager<VaultFacade>,
+                    public PmidNode<VaultFacade>,
+                    public maidsafe::routing::RoutingNode<VaultFacade> {
+
+ public:
+  VaultFacade() = default;
+  ~VaultFacade() = default;
+
+  enum class FunctorType { FunctionOne, FunctionTwo };
+  enum class DataType { ImmutableData, MutableData, End };
+
+};
+
+} // namespace vault
+
+} // namespace maidsafe
+
+#endif // MAIDSAFE_VAULT_VAULT_FACADE_H

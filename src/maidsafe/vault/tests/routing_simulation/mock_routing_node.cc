@@ -16,8 +16,14 @@
     See the Licences for the specific language governing permissions and limitations relating to
     use of the MaidSafe Software.                                                                 */
 
-#include "maidsafe/common/test.h"
+namespace maidsafe {
 
-int main(int argc, char** argv) {
-  return maidsafe::test::ExecuteMain(argc, argv);
+namespace vault {
+
+namespace test {
+
 }
+
+} // namespace vault
+
+} // namespace maidsafe
