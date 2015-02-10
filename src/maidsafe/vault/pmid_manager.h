@@ -15,3 +15,53 @@
 
     See the Licences for the specific language governing permissions and limitations relating to
     use of the MaidSafe Software.                                                                 */
+
+#ifndef MAIDSAFE_VAULT_PMID_MANAGER_H_
+#define MAIDSAFE_VAULT_PMID_MANAGER_H_
+
+struct PmidManagerAccount {
+  PmidManagerAccount() = default;
+  PmidManagerAccount(const PmidManagerAccount&) = default;
+  PmidManagerAccount(PmidManagerAccount&& other) MAIDSAFE_NOEXCEPT
+      : name(std::move(other.name)),
+        stored(std::move(other.stored)),
+        available(std::move(other.available)) {}
+  ~PmidManagerAccount() = default;
+  PmidManagerAccount& operator=(const PmidManagerAccount&) = default;
+  PmidManagerAccount& operator=(PmidManagerAccount&& rhs) MAIDSAFE_NOEXCEPT {
+    name = std::move(rhs.name);
+    stored = std::move(rhs.stored);
+    available = std::move(rhs.available);
+    return *this;
+  }
+
+  bool operator==(const PmidManagerAccount& other) const {
+    return std::tie(name, stored, available) == std::tie(other.name, other.stored, other.available);
+  }
+  bool operator!=(const PmidManagerAccount& other) const { return !operator==(other); }
+  bool operator<(const PmidManagerAccount& other) const {
+    return std::tie(name, stored, available) < std::tie(other.name, other.stored, other.available);
+  }
+  bool operator>(const PmidManagerAccount& other) { return operator<(other); }
+  bool operator<=(const PmidManagerAccount& other) { return !operator>(other); }
+  bool operator>=(const PmidManagerAccount& other) { return !operator<(other); }
+
+  Address name;
+  uint64_t stored;
+  uint64_t available;
+};
+
+template <typename FacadeType>
+class PmidManager {
+ public:
+  using account_type = MaidManagerAccount;
+  template <typename T>
+  void HandleGet(SourceAddress /* from */, Identity /* data_name */) {}
+  template <typename T>
+  void HandlePut(SourceAddress /* from */, Identity /* data_name */, DataType /* data */) {}
+  void HandleChurn(CloseGroupDifference) {
+    // send all account info to the group of each key and delete it - wait for refreshed accounts
+  }
+};
+
+#endif

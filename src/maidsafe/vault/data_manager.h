@@ -15,3 +15,52 @@
 
     See the Licences for the specific language governing permissions and limitations relating to
     use of the MaidSafe Software.                                                                 */
+
+#include "maidsafe/vault/maid_manager.h"
+
+#ifndef MAIDSAFE_VAULT_DATA_MANAGER_H_
+#define MAIDSAFE_VAULT_DATA_MANAGER_H_
+
+namespace maidsafe {
+
+namespace vault {
+
+template <typename DataManagerType, typename VersionManagerType>
+class NaeManager {
+ public:
+  using account_type = MaidManagerAccount;
+  template <typename T>
+  void HandleGet(SourceAddress from, Identity data_name);
+  template <typename T>
+  void HandlePut(SourceAddress /* from */, Identity /* data_name */, DataType /* data */) {}
+};  // becomes a dispatcher as its now multiple personas
+
+template <typename FacadeType>
+class VersionManager {};
+
+template <typename FacadeType>
+class DataManager {
+ public:
+  using account_type = MaidManagerAccount;
+  template <typename T>
+  void HandleGet(SourceAddress from, Identity data_name) {
+    // FIXME(dirvine) We need to pass along the full source address to retain the ReplyTo field
+    // :01/02/2015
+    static_cast<Child*>(this)
+        ->template Get<T>(data_name, std::get<0>(from), [](asio::error_code error) {
+          if (error)
+            LOG(kWarning) << "could not send from datamanager ";
+        });
+  }
+  template <typename T>
+  void HandlePut(SourceAddress /* from */, Identity /* data_name */, DataType /* data */) {}
+  void HandleChurn(CloseGroupDifference) {
+    // send all account info to the group of each key and delete it - wait for refreshed accounts
+  }
+};
+
+} // namespace vault
+
+} // namespace maidsafe
+
+#endif

@@ -16,26 +16,9 @@
     See the Licences for the specific language governing permissions and limitations relating to
     use of the MaidSafe Software.                                                                 */
 
-#ifndef MAIDSAFE_VAULT_PMID_NODE_H_
-#define MAIDSAFE_VAULT_PMID_NODE_H_
-
-namespace maidsafe {
-
-namespace vault {
-
-template <typename FacadeType>
-class PmidNode {
- public:
-  using account_type = PmidManagerAccount;
-  template <typename T>
-  void HandleGet(SourceAddress /* from */, Identity /* data_name */) {}
-  template <typename T>
-  void HandlePut(SourceAddress /* from */, Identity /* data_name */, DataType /* data */) {}
-};
-
-} // namespace vault
-
-} // namespace maidsafe
+#ifndef MAIDSAFE_VAULT_VAULTFACADE_H
+#define MAIDSAFE_VAULT_VAULTFACADE_H
 
 
-#endif
+
+#endif // MAIDSAFE_VAULT_VAULTFACADE_H
